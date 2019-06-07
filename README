@@ -1,0 +1,3 @@
+Hello there, if you would like to improve and update my code please let me know.
+Keyboard section works quite well but I'm having a little bit of an issue with using mouse. 
+You need to implement your IP into the MesajSender and MessageSender classes otherwise it will not communicate with your PC.
