@@ -1,25 +1,147 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.329
-MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsFormsApp2", "WindowsFormsApp2\WindowsFormsApp2.csproj", "{D2684ED8-5ECD-4774-97EC-79CFAEBC0E16}"
-EndProject
-Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{D2684ED8-5ECD-4774-97EC-79CFAEBC0E16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D2684ED8-5ECD-4774-97EC-79CFAEBC0E16}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D2684ED8-5ECD-4774-97EC-79CFAEBC0E16}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D2684ED8-5ECD-4774-97EC-79CFAEBC0E16}.Release|Any CPU.Build.0 = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {A68F0F92-43CB-484F-AE21-66B1565EDA95}
-	EndGlobalSection
-EndGlobal
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Diagnostics;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Sockets;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using WindowsInput;
+using WindowsInput.Native;
+
+namespace WindowsFormsApp2
+{
+    public partial class Form1 : Form
+    {
+
+        const int MAXTITLE = 255;
+        public static double x = 25000, y = 25000;
+
+      
+        public Form1()
+        {
+            // InitializeComponent();
+            Thread tcpServerRunThread = new Thread(new ThreadStart(TcpServerRun));
+            tcpServerRunThread.Start();
+            Console.WriteLine(x + " " + y);
+        }
+
+        static private void TcpServerRun()
+        {
+            Process[] processlist = Process.GetProcesses();
+            TcpListener tcpListener = new TcpListener(IPAddress.Any, 49150);
+            tcpListener.Start();
+
+            Console.WriteLine("Listening");
+            while (true)
+            {
+                TcpClient client = tcpListener.AcceptTcpClient();
+                //updateUI("");
+                // Console.WriteLine("connected");
+                Thread tcpHandlerThread = new Thread(new ParameterizedThreadStart(tcpHandler));
+                tcpHandlerThread.Start(client);
+            }
+        }
+
+
+        static private void tcpHandler(object client)
+        {
+            
+            TcpClient mClient = (TcpClient)client;
+            NetworkStream stream = mClient.GetStream();
+            byte[] message = new byte[5];            
+            stream.Read(message, 0, message.Length);
+            
+
+            BinaryReader reader = new BinaryReader(mClient.GetStream());
+            //var message = reader.ReadByte().ToString();
+            //var mesaj = reader.Read();
+
+           // Console.WriteLine("mesaj: "+mesaj);
+
+            //Encoding.UTF8.GetString(message)
+
+            Console.WriteLine("New Message: " + Encoding.UTF8.GetString(message));
+
+            InputSimulator input = new InputSimulator();
+
+
+            if (Encoding.UTF8.GetString(message).Equals("Enter"))
+            {
+                SendKeys.SendWait("{ENTER}");
+                SendKeys.Flush();
+            }
+            else if (Encoding.UTF8.GetString(message).Equals("Space"))
+            {
+                input.Keyboard.KeyPress(VirtualKeyCode.SPACE);
+            }
+            else if (Encoding.UTF8.GetString(message).Equals("Bcksp"))
+            {
+                SendKeys.SendWait("{BACKSPACE}");
+                SendKeys.Flush();
+            }
+            else if (Encoding.UTF8.GetString(message).Equals("MosUp"))
+            {
+                input.Mouse.MoveMouseTo(x, y);
+                y = y - 350;
+               // x = x+0;
+            }
+            else if (Encoding.UTF8.GetString(message).Equals("MosDw"))
+            {
+                input.Mouse.MoveMouseTo(x, y);
+                y = y + 350;
+                //x = x+0;
+            }            
+            else if (Encoding.UTF8.GetString(message).Equals("MLeft"))
+            {
+                input.Mouse.MoveMouseTo(x, y);
+                //y = y +0 ;
+                x = x - 350;
+            }
+            else if (Encoding.UTF8.GetString(message).Equals("MRght"))
+            {
+                input.Mouse.MoveMouseTo(x, y);
+                //y = y + 0;
+                x = x + 350;
+            }
+            else if (Encoding.UTF8.GetString(message).Equals("ClkLf"))
+            {
+                input.Mouse.LeftButtonClick();
+            }
+            else if (Encoding.UTF8.GetString(message).Equals("2Clck"))
+            {
+                input.Mouse.LeftButtonDoubleClick();
+            }
+            else if (Encoding.UTF8.GetString(message).Equals("ClkRg"))
+            {
+                input.Mouse.RightButtonClick();
+            }
+            else if (Encoding.UTF8.GetString(message).Equals("ScrDw"))
+            {
+                input.Mouse.VerticalScroll(-1);
+            }
+            else if (Encoding.UTF8.GetString(message).Equals("ScrUp"))
+            {
+                input.Mouse.VerticalScroll(1);
+            }
+            else
+            {
+                //SendKeys.SendWait(Encoding.UTF8.GetString(message));
+                //SendKeys.Flush();
+                input.Keyboard.TextEntry(Encoding.UTF8.GetString(message));
+            }            
+            // 192.168.1.35
+            //stream.Close();
+            //mClient.Close();
+
+        }
+    }
+}
