@@ -145,7 +145,4 @@ public class MouseActivity extends AppCompatActivity {
         return true;
     }
 
-
-
-
 }
