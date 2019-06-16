@@ -27,8 +27,6 @@ public class KeyboardActivity extends AppCompatActivity {
     private Button btnOk, butonEnter,butonSpace,butonDelete;
     private Toolbar toolbar3;
 
-
-
     @SuppressLint("ClickableViewAccessibility")
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -98,7 +96,6 @@ public class KeyboardActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.toolbar_menu,menu);
         return true;
     }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         Intent i;
@@ -116,8 +113,4 @@ public class KeyboardActivity extends AppCompatActivity {
         }
         return true;
     }
-
-
-
-
 }
